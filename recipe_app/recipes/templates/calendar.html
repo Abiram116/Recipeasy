@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Recipe Calendar{% endblock %}
+
+{% block extra_head %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js'></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex;">
+    <!-- Sidebar for My Recipes -->
+    <div id="my-recipes">
+        <h3>My Recipes</h3>
+        <div id="external-events">
+            {% for recipe in my_recipes %}
+                <div class='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event' data-recipe-id='{{ recipe.id }}'>
+                    <div class='fc-event-main'>{{ recipe.name }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div id="calendar-container">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var Draggable = FullCalendar.Draggable;
+
+        new Draggable(document.getElementById('external-events'), {
+            itemSelector: '.fc-event',
+            eventData: function(eventEl) {
+                return {
+                    title: eventEl.innerText,
+                    recipeId: eventEl.getAttribute('data-recipe-id')
+                };
+            }
+        });
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next',
+                center: 'title',
+                right: ''
+            },
+            editable: true,
+            droppable: true,
+            events: '{% url "get_recipe_schedule" %}',  // Load events from the server
+            displayEventTime: false, 
+            eventReceive: function(info) {
+                saveEvent(info.event);
+            },
+            eventDrop: function(info) {
+                saveEvent(info.event);
+            },
+            eventContent: function(arg) {
+                return {
+                    html: `
+                        <div class="fc-event-main">
+                            ${arg.event.title}
+                            <span class="remove-event" style="cursor:pointer;float:right;margin-right:5px;">×</span>
+                        </div>
+                    `
+                };
+            },
+            eventClick: function(info) {
+                if ($(info.el).find('.remove-event').is(event.target)) {
+                    removeEvent(info.event);
+                }
+            }
+        });
+
+        calendar.render();
+
+        function saveEvent(event) {
+            var localStartDate = event.startStr.split('T')[0];  // Extract date directly
+            
+            $.ajax({
+                url: '{% url "save_recipe_schedule" %}',
+                type: 'POST',
+                data: JSON.stringify({
+                    recipeId: event.extendedProps.recipeId,
+                    startTime: localStartDate, 
+                    eventId: event.id
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.id) {
+                        event.remove(); 
+                        calendar.addEvent({
+                            id: response.id,
+                            title: event.title,
+                            start: response.startTime,
+                            allDay: true,
+                            extendedProps: {
+                                recipeId: event.extendedProps.recipeId
+                            }
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.log('Error saving event:', error);
+                    calendar.refetchEvents();
+                }
+            });
+        }
+        
+
+        function removeEvent(event) {
+            $.ajax({
+                url: '{% url "remove_recipe_schedule" %}',
+                type: 'POST',
+                data: JSON.stringify({
+                    eventId: event.id
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        event.remove();
+                    }
+                },
+                error: function(error) {
+                    console.log('Error removing event:', error);
+                }
+            });
+        }
+    });
+</script>
+
+<style>
+    #calendar-container {
+        flex: 1;
+        margin-left: 20px;
+    }
+
+    #my-recipes {
+        width: 250px;
+        padding: 20px;
+        background: #f4f4f4;
+        border-right: 1px solid #ddd;
+    }
+
+    #external-events .fc-event {
+        margin: 10px 0;
+        padding: 5px;
+        background: #3788d8;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .remove-event:hover {
+        color: red;
+    }
+</style>
+{% endblock %}

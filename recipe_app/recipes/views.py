@@ -1,10 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth import views as auth_views
 from django.contrib import messages
-from django.shortcuts import render
-from recipes.forms import RecipeForm
-from .models import Recipe, UserRecipe
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from .models import Recipe, UserRecipe, RecipeSchedule
+from .forms import RecipeForm
+import json
+from datetime import datetime
+from django.utils import timezone
 
 def home(request):
     inspiring_recipes = Recipe.objects.filter(is_inspiring=True)
@@ -63,22 +67,80 @@ def recipe_detail(request, pk):
     ingredients = [ingredient.strip() for ingredient in recipe.ingredients.replace('\n', ',').split(',') if ingredient.strip()]
     return render(request, 'recipe_detail.html', {'recipe': recipe, 'ingredients': ingredients})
 
+# Calendar views
+@login_required
+def calendar_view(request):
+    user_recipes = UserRecipe.objects.filter(user=request.user).select_related('recipe')
+    recipes = [{
+        'id': user_recipe.recipe.id,
+        'name': user_recipe.recipe.name,
+    } for user_recipe in user_recipes]
 
-def add_to_my_recipes_session(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    my_recipes = request.session.get('my_recipes', [])
+    context = {
+        'my_recipes': recipes,
+    }
+    return render(request, 'calendar.html', context)
+
+@login_required
+def get_recipe_schedule(request):
+    scheduled_recipes = RecipeSchedule.objects.filter(user=request.user).select_related('recipe')
+    events = [{
+        'id': str(schedule.id),
+        'title': schedule.recipe.name,
+        'start': schedule.datetime.date().isoformat(),
+        'allDay': True,
+        'extendedProps': {
+            'recipeId': schedule.recipe.id
+        }
+    } for schedule in scheduled_recipes]
     
-    if recipe_id not in my_recipes:
-        my_recipes.append(recipe_id)
-    request.session['my_recipes'] = my_recipes
-    return redirect('home')
+    return JsonResponse(events, safe=False)
 
-def my_recipes_session(request):
-    recipe_ids = request.session.get('my_recipes', [])
-    recipes = Recipe.objects.filter(id__in=recipe_ids)
-    return render(request, 'my_recipes.html', {'recipes': recipes})
+@login_required
+@csrf_exempt
+@require_POST
+def save_recipe_schedule(request):
+    data = json.loads(request.body)
+    recipe_id = data['recipeId']
+    start_time_str = data['startTime']
+    event_id = data.get('eventId')
 
-def clear_my_recipes_session(request):
-    if 'my_recipes' in request.session:
-        del request.session['my_recipes']
-    return redirect('my_recipes')
+    recipe = get_object_or_404(Recipe, id=recipe_id)
+    
+    # Parse the date string directly, without timezone awareness
+    start_date = datetime.strptime(start_time_str, '%Y-%m-%d').date()
+    
+    # Create a timezone-aware datetime for the start of the day
+    start_time = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+
+    if event_id:
+        schedule, created = RecipeSchedule.objects.update_or_create(
+            id=event_id,
+            user=request.user,
+            defaults={'recipe': recipe, 'datetime': start_time}
+        )
+    else:
+        schedule = RecipeSchedule.objects.create(
+            user=request.user,
+            recipe=recipe,
+            datetime=start_time
+        )
+
+    return JsonResponse({
+        'id': str(schedule.id),
+        'startTime': schedule.datetime.date().isoformat(),
+    })
+
+@login_required
+@csrf_exempt
+@require_POST
+def remove_recipe_schedule(request):
+    data = json.loads(request.body)
+    event_id = data['eventId']
+
+    try:
+        schedule = RecipeSchedule.objects.get(id=event_id, user=request.user)
+        schedule.delete()
+        return JsonResponse({'success': True})
+    except RecipeSchedule.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Event not found'}, status=404)
