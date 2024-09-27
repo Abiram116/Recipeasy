@@ -3,8 +3,7 @@
     --secondary-color: #2ecc71;
     --accent-color: #e74c3c;
 
-    --background-start: #f8f9fa; /* Very light grayish blue (unchanged) */
-    --background-end: #b3d9ff;   /* Darker sky blue */
+    --background-color: #ffffff; /* White background */
 
     --text-color: #34495e;
     --card-background: rgba(255, 255, 255, 0.9);
@@ -19,7 +18,7 @@
 /* Global Styles */
 body {
     font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, var(--background-start), var(--background-end));
+    background-color: var(--background-color); /* White background */
     color: var(--text-color);
     margin: 0;
     padding: 0;
