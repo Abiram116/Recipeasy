@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 
 
 class Recipe(models.Model):
@@ -17,6 +18,10 @@ class Recipe(models.Model):
     
     def get_ingredients_list(self):
         return [ing.strip() for ing in self.ingredients.split('\n')]
+    
+    def clean(self):
+        if self.rating < 0 or self.rating > 5:  # Assuming a scale of 0-5
+            raise ValidationError('Rating must be between 0 and 5.')
 
     def __str__(self):
         return self.name
@@ -41,3 +46,12 @@ class Update(models.Model):
 
     def __str__(self):
         return self.message
+
+
+class RecipeSchedule(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    datetime = models.DateTimeField()  
+
+    def __str__(self):
+        return f"{self.recipe.name} scheduled for {self.datetime.strftime('%Y-%m-%d %H:%M')}"

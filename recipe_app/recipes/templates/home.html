@@ -4,6 +4,9 @@
 {% block content %}
 <section id="inspiring-recipes">
     <h2>Inspiring Recipes</h2>
+    <div class="mt-4"></div>
+    <a href="{% url 'create_recipe' %}" class="btn btn-primary">Create New Recipe</a>
+    </div>
     <div class="recipe-grid">
         {% for recipe in inspiring_recipes %}
         <div class="recipe-card">
@@ -35,8 +38,4 @@
         {% endfor %}
     </div>
 </section>
-
-<div class="mt-4">
-    <a href="{% url 'create_recipe' %}" class="btn btn-primary">Create New Recipe</a>
-</div>
 {% endblock %}

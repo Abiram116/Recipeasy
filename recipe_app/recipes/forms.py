@@ -1,5 +1,5 @@
 from django import forms
-from .models import Recipe
+from .models import Recipe, RecipeSchedule
 
 class RecipeForm(forms.ModelForm):
     class Meta:
@@ -14,3 +14,16 @@ class RecipeForm(forms.ModelForm):
             'is_inspiring': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'ingredients': forms.Textarea(attrs={'class': 'form-control recipe-textarea', 'rows': 5}),
         }
+
+class RecipeScheduleForm(forms.ModelForm):
+    class Meta:
+        model = RecipeSchedule
+        fields = ['recipe', 'datetime']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
+        self.fields['recipe'].queryset = Recipe.objects.filter(user=user)
+        self.fields['datetime'].widget = forms.DateTimeInput(attrs={
+            'type': 'datetime-local',
+        })
