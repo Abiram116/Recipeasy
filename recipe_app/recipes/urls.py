@@ -19,6 +19,12 @@ urlpatterns = [
 
     # Profile URL
     path('profile/', views.profile, name='profile'),
+
+    path('schedule-data/', views.schedule_data, name='schedule_data'),
+    path('schedule-recipe/', views.schedule_recipe, name='schedule_recipe'),
+    path('update-schedule/<int:event_id>/', views.update_schedule, name='update_schedule'),
+    path('calendar/', views.calendar_view, name='calendar'),
+
 ]
 
 if settings.DEBUG:

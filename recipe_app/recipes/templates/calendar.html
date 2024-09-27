@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Recipe Calendar
+{% endblock %}
+
+{% block content %}
+<div style="display: flex;">
+    <!-- Sidebar for My Recipes -->
+    <div id="my-recipes">
+        <h3>My Recipes</h3>
+        <ul id="recipe-list">
+            {% for recipe in my_recipes %}
+                <li>
+                    <button class="draggable-recipe" 
+                            data-recipe-id="{{ recipe.id }}" 
+                            draggable="true">
+                        {{ recipe.name }}
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Calendar Container -->
+    <div id="calendar-container">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<style>
+    /* Main container */
+    #calendar-container {
+        flex: 1;
+        margin-left: 20px;
+    }
+
+    /* My Recipes Sidebar */
+    #my-recipes {
+        width: 250px;
+        background-color: #f7f9fb;
+        border: 1px solid #dfe4ea;
+        padding: 20px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    #my-recipes h3 {
+        text-align: center;
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        color: #2d98da;
+    }
+
+    #recipe-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    #recipe-list li {
+        margin-bottom: 10px;
+    }
+
+    .draggable-recipe {
+        padding: 10px 15px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: grab;
+        font-size: 14px;
+        width: 100%;
+    }
+
+    .draggable-recipe:active {
+        cursor: grabbing;
+    }
+
+    /* Calendar styles */
+    #calendar {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+
+        // Initialize FullCalendar
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            editable: true,
+            droppable: true,  // Allow drag-and-drop onto the calendar
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            drop: function(info) {
+                // Get the recipe ID from the dragged element
+                var recipeId = info.draggedEl.getAttribute('data-recipe-id');
+                var recipeName = info.draggedEl.textContent;  // Corrected variable name
+                var date = info.dateStr; // The date on which it was dropped
+
+                // Create a datetime string (e.g., 2024-09-30T00:00:00)
+                var datetime = date + 'T00:00:00';  // Set time to midnight
+
+                // Add the recipe as a new event to the calendar
+                calendar.addEvent({
+                    title: recipeName,
+                    start: datetime, // Use datetime instead of date
+                    allDay: true,
+                    extendedProps: {
+                        recipeId: recipeId
+                    }
+                });
+
+                // Optionally: Send an AJAX request to save this scheduled event in the backend
+                saveRecipeToDate(recipeId, datetime);  // Pass datetime here
+            }
+        });
+        calendar.render();
+
+        // Make each recipe in the list draggable
+        var recipeItems = document.querySelectorAll('.draggable-recipe');
+        recipeItems.forEach(function(item) {
+            item.addEventListener('dragstart', function(e) {
+                // Set the dataTransfer object with recipe ID
+                e.dataTransfer.setData('text/plain', item.getAttribute('data-recipe-id'));
+            });
+        });
+
+        // Function to schedule a recipe in the backend
+        function saveRecipeToDate(recipeId, datetime) {     
+            $.ajax({
+                url: '/schedule_recipe/',  // Backend endpoint for scheduling
+                method: 'POST',
+                data: {
+                    'recipe_id': recipeId,
+                    'datetime': datetime,  // Send datetime to backend
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'  // Include CSRF token for Django forms
+                },
+                success: function(response) {
+                    console.log("Recipe scheduled successfully!");
+                },
+                error: function(error) {
+                    console.error("Failed to schedule recipe:", error);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
