@@ -3,25 +3,45 @@
 
 {% block extra_css %}
 <style>
+  .my-recipes-container {
+    padding: 2rem;
+  }
+  .my-recipes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  .my-recipes-title {
+    font-size: 2rem;
+    color: #3498db;
+    margin: 0;
+  }
+  .clear-recipes {
+    background-color: #e74c3c;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .clear-recipes:hover {
+    background-color: #c0392b;
+  }
   .recipe-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
-    padding: 1rem;
+    gap: 2rem;
   }
   .recipe-card {
-    background-color: var(--card-background);
-    border-radius: 8px;
-    box-shadow: var(--card-shadow);
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-  .recipe-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    position: relative;
   }
   .recipe-card img {
     width: 100%;
@@ -29,69 +49,91 @@
     object-fit: cover;
   }
   .recipe-card-content {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+    padding: 1.5rem;
   }
   .recipe-card h3 {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     margin: 0 0 0.5rem;
-    color: var(--primary-color);
+  }
+  .recipe-card h3 a {
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  .recipe-card h3 a:hover {
+    color: #2ecc71;  /* Change to green on hover */
   }
   .recipe-card p {
-    font-size: 0.9rem;
-    margin: 0 0 1rem;
-    color: var(--text-color);
-    flex-grow: 1;
-  }
-  .recipe-card a {
-    display: block;
-    padding: 0.5rem 1rem;
-    background-color: var(--secondary-color);
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 0.9rem;
-    transition: background-color 0.3s ease;
-    margin-top: auto;
-  }
-  .recipe-card a:hover {
-    background-color: #27ae60;
-  }
-  .clear-recipes {
-    display: block;
-    text-align: center;
-    margin: 1rem 0;
-    padding: 0.5rem 1rem;
-    background-color: var(--accent-color);
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
     font-size: 1rem;
+    color: #34495e;
+    margin: 0;
+  }
+  .remove-recipe {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: white;
+    color: #e74c3c;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
     transition: background-color 0.3s ease;
   }
-  .clear-recipes:hover {
-    background-color: #c0392b;
+  .remove-recipe:hover {
+    background-color: #e74c3c;
+    color: white;
+  }
+  .no-recipes-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<h2>My Recipes</h2>
-<div class="recipe-grid">
+<div class="my-recipes-container">
+  <div class="my-recipes-header">
+    <h2 class="my-recipes-title">My Recipes</h2>
+    {% if recipes %}
+    <form method="POST" action="{% url 'clear_my_recipes' %}">
+      {% csrf_token %}
+      <button type="submit" class="clear-recipes">Clear My Recipes</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if recipes %}
+  <div class="recipe-grid">
     {% for recipe in recipes %}
     <div class="recipe-card">
-        <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}">
-        <div class="recipe-card-content">
-            <h3>{{ recipe.name }}</h3>
-            <p>{{ recipe.description }}</p>
-
-            <a href="{% url 'recipe_detail' recipe.id %}">View Full Recipe</a>
-        </div>
+      <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}">
+      <div class="recipe-card-content">
+        <h3><a href="{% url 'recipe_detail' recipe.id %}">{{ recipe.name }}</a></h3>
+        <p>{{ recipe.description }}</p>
+        <form method="POST" action="{% url 'remove_from_my_recipes' recipe.id %}">
+          {% csrf_token %}
+          <button type="submit" class="remove-recipe">×</button>
+        </form>
+      </div>
     </div>
     {% endfor %}
+  </div>
+  {% else %}
+  <div class="no-recipes-message">
+    <h3>You haven't added any recipes yet!</h3>
+    <p>Start building your personal cookbook by adding recipes from the home page.</p>
+    <p>Just click the "+" button on any recipe you'd like to save for later.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Explore Recipes</a>
+  </div>
+  {% endif %}
 </div>
-<a href="{% url 'clear_my_recipes' %}" class="clear-recipes">Clear My Recipes</a>
 {% endblock %}

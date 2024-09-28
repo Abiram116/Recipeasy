@@ -9,7 +9,7 @@ class RecipeForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control recipe-textarea', 'rows': 5}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
-            'rating': forms.NumberInput(attrs={'class': 'form-control'}),
+            'rating': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 5}),
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'is_inspiring': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'ingredients': forms.Textarea(attrs={'class': 'form-control recipe-textarea', 'rows': 5}),

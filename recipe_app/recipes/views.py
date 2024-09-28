@@ -48,9 +48,20 @@ def create_recipe(request):
 @login_required
 def add_to_my_recipes(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
-    UserRecipe.objects.get_or_create(recipe=recipe, user=request.user)
-    return redirect('home')
-
+    user_recipe, created = UserRecipe.objects.get_or_create(recipe=recipe, user=request.user)
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if created:
+            return JsonResponse({'status': 'success', 'message': 'Recipe added to My Recipes'})
+        else:
+            return JsonResponse({'status': 'info', 'message': 'Recipe already in My Recipes'})
+    else:
+        if created:
+            messages.success(request, 'Recipe added to My Recipes')
+        else:
+            messages.info(request, 'Recipe already in My Recipes')
+        return redirect('home')
+    
 @login_required
 def my_recipes(request):
     user_recipes = UserRecipe.objects.filter(user=request.user)
@@ -58,8 +69,18 @@ def my_recipes(request):
     return render(request, 'my_recipes.html', {'recipes': recipes})
 
 @login_required
+def remove_from_my_recipes(request, recipe_id):
+    if request.method == 'POST':
+        user_recipe = get_object_or_404(UserRecipe, user=request.user, recipe_id=recipe_id)
+        user_recipe.delete()
+        messages.success(request, 'Recipe removed successfully.')
+    return redirect('my_recipes')
+
+@login_required
 def clear_my_recipes(request):
-    UserRecipe.objects.filter(user=request.user).delete()
+    if request.method == 'POST':
+        UserRecipe.objects.filter(user=request.user).delete()
+        messages.success(request, 'All recipes cleared successfully.')
     return redirect('my_recipes')
 
 def recipe_detail(request, pk):
@@ -93,7 +114,7 @@ def get_recipe_schedule(request):
             'recipeId': schedule.recipe.id
         }
     } for schedule in scheduled_recipes]
-    
+
     return JsonResponse(events, safe=False)
 
 @login_required
@@ -106,10 +127,10 @@ def save_recipe_schedule(request):
     event_id = data.get('eventId')
 
     recipe = get_object_or_404(Recipe, id=recipe_id)
-    
+
     # Parse the date string directly, without timezone awareness
     start_date = datetime.strptime(start_time_str, '%Y-%m-%d').date()
-    
+
     # Create a timezone-aware datetime for the start of the day
     start_time = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
 
