@@ -3,26 +3,39 @@
 
 {% block content %}
 <section id="inspiring-recipes">
-    <h2>Inspiring Recipes</h2>
-    <div class="mt-4"></div>
-    <a href="{% url 'create_recipe' %}" class="btn btn-primary">Create New Recipe</a>
+    <div class="section-header">
+        <h2>Inspiring Recipes</h2>
+        <a href="{% url 'create_recipe' %}" class="btn btn-create-recipe">Create New Recipe</a>
     </div>
     <div class="recipe-grid">
         {% for recipe in inspiring_recipes %}
-        <div class="recipe-card">
+        <div class="recipe-card" data-recipe-id="{{ recipe.id }}">
             <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}">
             <div class="recipe-card-content">
-                <h3>{{ recipe.name }}</h3>
+                <h3><a href="{% url 'recipe_detail' recipe.id %}">{{ recipe.name }}</a></h3>
+                <div class="recipe-rating">
+                    <div class="stars" data-rating="{{ recipe.rating }}">
+                        {% for i in "12345" %}
+                            {% with forloop.counter|add:"-0.5" as half_star %}
+                                {% if forloop.counter <= recipe.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% elif half_star == recipe.rating %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                    <span class="rating-value">{{ recipe.rating }}</span>
+                </div>
                 <p>{{ recipe.description|truncatewords:20 }}</p>
                 <div class="recipe-card-actions">
-                    <a href="{% url 'recipe_detail' recipe.id %}" class="btn btn-primary" title="View Recipe">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                    <a href="{% url 'add_to_my_recipes' recipe.id %}" class="btn btn-success" title="Add to My Recipes">
+                    <button class="btn btn-add" title="Add to My Recipes" onclick="addToMyRecipes({{ recipe.id }})">
                         <i class="fas fa-plus"></i>
-                    </a>
+                    </button>
                     <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="ingredientsDropdown-{{ recipe.id }}"
+                        <button class="btn btn-ingredients dropdown-toggle" type="button" id="ingredientsDropdown-{{ recipe.id }}"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Ingredients
                         </button>
@@ -38,4 +51,50 @@
         {% endfor %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function addToMyRecipes(recipeId) {
+        const button = document.querySelector(`.recipe-card[data-recipe-id="${recipeId}"] .btn-add`);
+        const originalContent = button.innerHTML;
+        
+        fetch(`/add_to_my_recipes/${recipeId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success' || data.status === 'info') {
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                button.classList.add('added');
+                button.disabled = true;
+                
+                // Revert button after 2 seconds
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.classList.remove('added');
+                    button.disabled = false;
+                }, 2000);
+                
+                alert(data.message);
+            } else {
+                throw new Error(data.message || 'Failed to add recipe');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(`An error occurred: ${error.message}. Please try again.`);
+        });
+    }
+</script>
 {% endblock %}

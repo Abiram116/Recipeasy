@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 
 class Recipe(models.Model):
@@ -9,7 +11,15 @@ class Recipe(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='recipes/')
     date = models.DateField(null=True, blank=True)
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    rating = models.DecimalField(
+        max_digits=2,
+        decimal_places=1,
+        default=1.0,
+        validators=[
+            MinValueValidator(1.0, message="Rating must be at least 1."),
+            MaxValueValidator(5.0, message="Rating cannot exceed 5.")
+        ]
+    )
     is_inspiring = models.BooleanField(default=True)
     ingredients = models.TextField()
 
@@ -18,10 +28,6 @@ class Recipe(models.Model):
     
     def get_ingredients_list(self):
         return [ing.strip() for ing in self.ingredients.split('\n')]
-    
-    def clean(self):
-        if self.rating < 0 or self.rating > 5:  # Assuming a scale of 0-5
-            raise ValidationError('Rating must be between 0 and 5.')
 
     def __str__(self):
         return self.name
