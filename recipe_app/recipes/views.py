@@ -37,6 +37,18 @@ def profile(request):
     return render(request, 'profile.html', context)
 
 @login_required
+def update_profile(request):
+    if request.method == 'POST':
+        user = request.user
+        user.email = request.POST.get('email')
+        user.first_name = request.POST.get('first_name')
+        user.last_name = request.POST.get('last_name')
+        user.save()
+        messages.success(request, 'Profile updated successfully.')
+        return redirect('profile')  # Redirect to profile page after update
+    return render(request, 'profile.html')
+
+@login_required
 def create_recipe(request):
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
@@ -90,7 +102,9 @@ def clear_my_recipes(request):
 def recipe_detail(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
     ingredients = [ingredient.strip() for ingredient in recipe.ingredients.replace('\n', ',').split(',') if ingredient.strip()]
+    print(f"Rating for {recipe.name}: {recipe.rating}")  # Check if the rating is available
     return render(request, 'recipe_detail.html', {'recipe': recipe, 'ingredients': ingredients})
+
 
 # Calendar views
 @login_required

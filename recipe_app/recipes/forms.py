@@ -6,13 +6,12 @@ from .models import Recipe, RecipeSchedule
 class RecipeForm(forms.ModelForm):
     class Meta:
         model = Recipe
-        fields = ['name', 'description', 'image', 'rating', 'date', 'is_inspiring', 'ingredients']
+        fields = ['name', 'description', 'image', 'rating', 'is_inspiring', 'ingredients']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter recipe name'}),
             'description': forms.Textarea(attrs={'class': 'form-control recipe-textarea', 'rows': 5, 'placeholder': 'Describe your recipe'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'rating': forms.Select(attrs={'class': 'form-control'}, choices=[(i, str(i)) for i in range(1, 6)]),
-            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'value': timezone.now().date().isoformat()}),
             'is_inspiring': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'ingredients': forms.Textarea(attrs={'class': 'form-control recipe-textarea', 'rows': 5, 'placeholder': 'List your ingredients'}),
         }
