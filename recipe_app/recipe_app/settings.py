@@ -13,7 +13,7 @@ SECRET_KEY = config('DJANGO_SECRET_KEY', default='your-default-secret-key')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost','.onrender.com']
 
 # Application definition
 INSTALLED_APPS = [
