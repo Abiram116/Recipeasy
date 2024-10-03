@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+{% block extra_css %}
+<style>
+    .page-container {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .user-greeting {
+        align-self: flex-start;
+        font-size: 1.5rem;
+        color: #3498db;
+        margin-bottom: 20px;
+    }
+
+    #inspiring-recipes {
+        width: 100%;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .recipe-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .recipe-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .recipe-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .recipe-card-content {
+        padding: 15px;
+    }
+</style>
+{% endblock %}
+
+<section id="user-greeting" class="mb-4">
+    <h1 class="display-4">Hi, {{ user.first_name|default:user.username }}</h1>
+</section>
+
+<section id="inspiring-recipes">
+    <div class="section-header">
+        <h2>Inspiring Recipes</h2>
+        <a href="{% url 'create_recipe' %}" class="btn btn-create-recipe">Create New Recipe</a>
+    </div>
+    <div class="recipe-grid">
+        {% for recipe in inspiring_recipes %}
+        <div class="recipe-card" data-recipe-id="{{ recipe.id }}">
+            <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}">
+            <div class="recipe-card-content">
+                <h3><a href="{% url 'recipe_detail' recipe.id %}">{{ recipe.name }}</a></h3>
+                <div class="recipe-rating">
+                    <div class="stars" data-rating="{{ recipe.rating }}">
+                        {% for i in "12345" %}
+                            <span class="star">
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </span>
+                        {% endfor %}
+                    </div>
+                    <span class="rating-value">{{ recipe.rating }}</span>
+                </div>
+                <p>{{ recipe.description|truncatewords:20 }}</p>
+                <div class="recipe-card-actions">
+                    <button class="btn btn-add" title="Add to My Recipes" onclick="addToMyRecipes({{ recipe.id }})">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-ingredients dropdown-toggle" type="button" id="ingredientsDropdown-{{ recipe.id }}"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Ingredients
+                        </button>
+                        <ul class="dropdown-menu ingredients-list" aria-labelledby="ingredientsDropdown-{{ recipe.id }}">
+                            {% for ingredient in recipe.ingredients_list %}
+                            <li><span class="dropdown-item">{{ ingredient }}</span></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const recipeCards = document.querySelectorAll('.recipe-card');
+        
+        recipeCards.forEach(card => {
+            const starsContainer = card.querySelector('.stars');
+            const rating = parseFloat(starsContainer.dataset.rating);
+            const stars = starsContainer.querySelectorAll('.star');
+            
+            stars.forEach((star, index) => {
+                const filledStar = star.querySelector('.fas');
+                if (index + 1 <= rating) {
+                    filledStar.style.width = '100%';
+                } else if (index < rating) {
+                    const fillPercentage = (rating - index) * 100;
+                    filledStar.style.width = `${fillPercentage}%`;
+                } else {
+                    filledStar.style.width = '0%';
+                }
+            });
+        });
+    });
+
+    function addToMyRecipes(recipeId) {
+        const button = document.querySelector(`.recipe-card[data-recipe-id="${recipeId}"] .btn-add`);
+        const originalContent = button.innerHTML;
+        
+        fetch(`/add_to_my_recipes/${recipeId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success' || data.status === 'info') {
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                button.classList.add('added');
+                button.disabled = true;
+                
+                // Revert button after 2 seconds
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.classList.remove('added');
+                    button.disabled = false;
+                }, 2000);
+                
+                alert(data.message);
+            } else {
+                throw new Error(data.message || 'Failed to add recipe');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(`An error occurred: ${error.message}. Please try again.`);
+        });
+    }
+</script>
+{% endblock %}

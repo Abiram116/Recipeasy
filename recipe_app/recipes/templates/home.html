@@ -1,100 +1,280 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Recipeasy - Simplify Your Cooking{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #007bff;
+        --secondary-color: #0056b3;
+        --text-color: #666;
+        --background-color: #ffffff;
+        --body-color: #333;
+        --icon-size: 2rem;
+    }
+
+    body {
+        background-color: var(--background-color);
+        color: var(--body-color);
+        margin: 0;
+        padding: 0;
+    }
+
+    .hero-section {
+        min-height: 60vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 1rem;
+    }
+
+    .hero-content {
+        text-align: center;
+    }
+
+    .website-name {
+        font-size: 18vw;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin: 0;
+        line-height: 1;
+    }
+
+    .tagline {
+        font-size: 5vw;
+        color: var(--secondary-color);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .sub-tagline {
+        font-size: 2vw;
+        color: var(--text-color);
+        margin-top: 0.25rem;
+    }
+
+    .section {
+        padding: 2rem 0;
+    }
+
+    .feature-icon {
+        font-size: var(--icon-size);
+        margin-bottom: 0.25rem;
+        color: var(--primary-color);
+    }
+
+    .image-grid-container {
+        display: flex;
+        width: 100%;
+        padding: 4% 2%;
+        box-sizing: border-box;
+        height: 50vh;
+    }
+
+    .image-grid-box {
+        flex: 1;
+        overflow: hidden;
+        transition: .5s;
+        margin: 0 2%;
+        box-shadow: 0 20px 30px rgba(0,0,0,.1);
+        line-height: 0;
+        border-radius: 10px;
+    }
+
+    .image-grid-box > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; 
+        transition: .5s;
+    }
+
+    .image-grid-box:hover { flex: 1 1 50%; }
+    .image-grid-box:hover > img {
+        width: 100%;
+        height: 100%;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+        color: var(--primary-color);
+    }
+
+    h2 {
+        margin-bottom: 1rem;
+    }
+
+    .feature-item {
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .website-name {
+            font-size: 20vw;
+        }
+
+        .tagline {
+            font-size: 7vw;
+        }
+
+        .sub-tagline {
+            font-size: 3vw;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section id="inspiring-recipes">
-    <div class="section-header">
-        <h2>Inspiring Recipes</h2>
-        <a href="{% url 'create_recipe' %}" class="btn btn-create-recipe">Create New Recipe</a>
-    </div>
-    <div class="recipe-grid">
-        {% for recipe in inspiring_recipes %}
-        <div class="recipe-card" data-recipe-id="{{ recipe.id }}">
-            <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}">
-            <div class="recipe-card-content">
-                <h3><a href="{% url 'recipe_detail' recipe.id %}">{{ recipe.name }}</a></h3>
-                <div class="recipe-rating">
-                    <div class="stars" data-rating="{{ recipe.rating }}">
-                        {% for i in "12345" %}
-                            {% with forloop.counter|add:"-0.5" as half_star %}
-                                {% if forloop.counter <= recipe.rating %}
-                                    <i class="fas fa-star"></i>
-                                {% elif half_star == recipe.rating %}
-                                    <i class="fas fa-star-half-alt"></i>
-                                {% else %}
-                                    <i class="far fa-star"></i>
-                                {% endif %}
-                            {% endwith %}
-                        {% endfor %}
-                    </div>
-                    <span class="rating-value">{{ recipe.rating }}</span>
+<div class="container-fluid p-0">
+    <section id="hero" class="hero-section">
+        <div class="hero-content">
+            <h1 class="website-name">Recipeasy</h1>
+            <h2 class="tagline">Simplify Your Cooking</h2>
+            <p class="sub-tagline">Your personal recipe planner and meal inspiration hub</p>
+        </div>
+    </section>
+
+    <section id="features" class="section">
+        <div class="container">
+            <h2 class="text-center">Elevate Your Culinary Experience</h2>
+            <div class="row">
+                <div class="col-md-4 feature-item">
+                    <i class="bi bi-journal-plus feature-icon"></i>
+                    <h4>Personalized Recipe Collection</h4>
+                    <p>Curate and organize your favorite recipes in one convenient digital cookbook.</p>
                 </div>
-                <p>{{ recipe.description|truncatewords:20 }}</p>
-                <div class="recipe-card-actions">
-                    <button class="btn btn-add" title="Add to My Recipes" onclick="addToMyRecipes({{ recipe.id }})">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <div class="dropdown">
-                        <button class="btn btn-ingredients dropdown-toggle" type="button" id="ingredientsDropdown-{{ recipe.id }}"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Ingredients
-                        </button>
-                        <ul class="dropdown-menu ingredients-list" aria-labelledby="ingredientsDropdown-{{ recipe.id }}">
-                            {% for ingredient in recipe.ingredients_list %}
-                            <li><span class="dropdown-item">{{ ingredient }}</span></li>
-                            {% endfor %}
-                        </ul>
+                <div class="col-md-4 feature-item">
+                    <i class="bi bi-calendar-event feature-icon"></i>
+                    <h4>Intelligent Meal Planning</h4>
+                    <p>Effortlessly plan your meals with our intuitive calendar integration.</p>
+                </div>
+                <div class="col-md-4 feature-item">
+                    <i class="bi bi-cart-check feature-icon"></i>
+                    <h4>Automated Grocery Lists</h4>
+                    <p>Generate smart shopping lists based on your meal plan, saving time and reducing waste.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="photo-grid" class="section">
+        <div class="container">
+            <h2 class="text-center">Culinary Inspiration Gallery</h2>
+            <div class="image-grid-container">
+                <div class="image-grid-box">
+                    <img src="{% static 'images/8.jpg' %}" alt="Recipe Inspiration 1">
+                </div>
+                <div class="image-grid-box">
+                    <img src="{% static 'images/11.jpg' %}" alt="Recipe Inspiration 2">
+                </div>
+                <div class="image-grid-box">
+                    <img src="{% static 'images/10.jpg' %}" alt="Recipe Inspiration 3">
+                </div>
+                <div class="image-grid-box">
+                    <img src="{% static 'images/14.jpg' %}" alt="Recipe Inspiration 4">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="section">
+        <div class="container">
+            <h2 class="text-center">Streamline Your Cooking Journey</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <i class="bi bi-person-plus timeline-icon"></i>
+                    <div>
+                        <h4>Create Your Culinary Hub</h4>
+                        <p>Sign up and set up your personalized cooking space.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <i class="bi bi-search timeline-icon"></i>
+                    <div>
+                        <h4>Explore and Curate</h4>
+                        <p>Discover new recipes or add your own signature dishes.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <i class="bi bi-calendar-week timeline-icon"></i>
+                    <div>
+                        <h4>Plan with Precision</h4>
+                        <p>Organize your meals effortlessly with our intuitive calendar.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <i class="bi bi-list-check timeline-icon"></i>
+                    <div>
+                        <h4>Shop Smarter</h4>
+                        <p>Generate comprehensive grocery lists tailored to your meal plan.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <i class="bi bi-egg-fried timeline-icon"></i>
+                    <div>
+                        <h4>Cook with Confidence</h4>
+                        <p>Prepare delicious meals guided by your personalized recipe collection.</p>
                     </div>
                 </div>
             </div>
         </div>
-        {% endfor %}
-    </div>
-</section>
+    </section>
+</div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
 <script>
-    function addToMyRecipes(recipeId) {
-        const button = document.querySelector(`.recipe-card[data-recipe-id="${recipeId}"] .btn-add`);
-        const originalContent = button.innerHTML;
-        
-        fetch(`/add_to_my_recipes/${recipeId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+    gsap.registerPlugin(ScrollTrigger);
+
+    const animateSection = (element, xStart = -100, delay = 0) => {
+        gsap.from(element, {
+            opacity: 0,
+            x: xStart,
+            duration: 1,
+            delay: delay,
+            ease: "power3.out",
+            scrollTrigger: {
+                trigger: element,
+                start: 'top 80%'
             }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success' || data.status === 'info') {
-                button.innerHTML = '<i class="fas fa-check"></i>';
-                button.classList.add('added');
-                button.disabled = true;
-                
-                // Revert button after 2 seconds
-                setTimeout(() => {
-                    button.innerHTML = originalContent;
-                    button.classList.remove('added');
-                    button.disabled = false;
-                }, 2000);
-                
-                alert(data.message);
-            } else {
-                throw new Error(data.message || 'Failed to add recipe');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert(`An error occurred: ${error.message}. Please try again.`);
         });
-    }
+    };
+
+    animateSection('.website-name');
+    animateSection('.tagline', -100, 0.3);
+    animateSection('.sub-tagline', -100, 0.6);
+
+    gsap.from('.feature-item', {
+        opacity: 0,
+        y: 30,
+        stagger: 0.2,
+        duration: 0.8,
+        ease: 'power2.out',
+        scrollTrigger: {
+            trigger: '#features',
+            start: 'top 80%'
+        }
+    });
+
+    gsap.from('.timeline-item', {
+        opacity: 0,
+        x: -30,
+        stagger: 0.3,
+        duration: 0.8,
+        ease: 'power3.out',
+        scrollTrigger: {
+            trigger: '#how-it-works',
+            start: 'top 80%'
+        }
+    });
 </script>
 {% endblock %}
