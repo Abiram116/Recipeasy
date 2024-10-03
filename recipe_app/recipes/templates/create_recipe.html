@@ -44,15 +44,7 @@
         border-radius: 5px;
         outline: none;
     }
-    .form-range::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        background: #007bff;
-        border-radius: 50%;
-        cursor: pointer;
-    }
+    .form-range::-webkit-slider-thumb,
     .form-range::-moz-range-thumb {
         width: 20px;
         height: 20px;
@@ -88,13 +80,13 @@
                                 {% render_field field class="form-check-input" %}
                                 <label class="form-check-label" for="{{ field.id_for_label }}">Mark as inspiring</label>
                             </div>
-                            {% elif field.name == 'rating' %}
+                        {% elif field.name == 'rating' %}
                             <div class="mb-4">
                                 {% render_field field class="form-control" type="hidden" %}
                                 <input type="range" min="1" max="5" value="3" step="0.5" class="form-range" id="rating-slider" />
                                 <span id="slider-value">3</span> / 5
-                            </div>                        
-                        {% elif field.name == 'description' or field.name == 'ingredients' %}
+                            </div>
+                        {% elif field.name in 'description ingredients' %}
                             {% render_field field class="form-control" rows="5" %}
                             <div class="textarea-counter">
                                 <span class="current">0</span> / <span class="maximum">1000</span>
@@ -124,6 +116,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Rating slider
     const slider = document.getElementById('rating-slider');
     const ratingInput = document.querySelector('input[name="rating"]');
     const sliderValue = document.getElementById('slider-value');
@@ -132,28 +125,23 @@ document.addEventListener('DOMContentLoaded', function() {
         sliderValue.textContent = parseFloat(this.value).toFixed(1);
         ratingInput.value = this.value;
     });
+
+    // Textarea counter
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        const counter = textarea.nextElementSibling.querySelector('.current');
+        textarea.addEventListener('input', function() {
+            counter.textContent = this.value.length;
+        });
+    });
+
+    // Custom file input
+    const fileInput = document.querySelector('.custom-file-input');
+    const fileLabel = document.querySelector('.custom-file-label');
+    fileInput.addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || 'Choose file';
+        fileLabel.textContent = fileName;
+    });
 });
-
-
-    // JavaScript for textarea counter
-    document.addEventListener('DOMContentLoaded', function() {
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(textarea => {
-            const counter = textarea.nextElementSibling.querySelector('.current');
-            textarea.addEventListener('input', function() {
-                counter.textContent = this.value.length;
-            });
-        });
-    });
-
-    // JavaScript for custom file input
-    document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.querySelector('.custom-file-input');
-        const fileLabel = document.querySelector('.custom-file-label');
-        fileInput.addEventListener('change', function(e) {
-            let fileName = e.target.files[0].name;
-            fileLabel.textContent = fileName;
-        });
-    });
 </script>
 {% endblock %}

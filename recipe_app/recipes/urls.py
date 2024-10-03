@@ -20,6 +20,8 @@ urlpatterns = [
     
     # Profile URL
     path('profile/', views.profile, name='profile'),
+    path('profile/update/', views.update_profile, name='update_profile'),
+
 
     # Calendar-related URLs
     path('calendar/', views.calendar_view, name='calendar'),

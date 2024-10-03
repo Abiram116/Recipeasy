@@ -156,15 +156,12 @@
                     button.classList.remove('added');
                     button.disabled = false;
                 }, 2000);
-                
-                alert(data.message);
             } else {
                 throw new Error(data.message || 'Failed to add recipe');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert(`An error occurred: ${error.message}. Please try again.`);
         });
     }
 </script>
