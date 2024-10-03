@@ -10,7 +10,11 @@ import json
 from datetime import datetime
 from django.utils import timezone
 
+
 def home(request):
+    return render(request, 'home.html')
+
+def inspire(request):
     inspiring_recipes = Recipe.objects.filter(is_inspiring=True)
     for recipe in inspiring_recipes:
         recipe.ingredients_list = [ingredient.strip() for ingredient in recipe.ingredients.replace('\n', ',').split(',') if ingredient.strip()]
@@ -19,7 +23,7 @@ def home(request):
         'inspiring_recipes': inspiring_recipes,
         'user': request.user,
     }
-    return render(request, 'home.html', context)
+    return render(request, 'inspire.html', context)
 
 @login_required
 def profile(request):
