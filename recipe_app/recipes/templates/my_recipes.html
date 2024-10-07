@@ -42,6 +42,10 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     position: relative;
+    transition: transform 0.2s;
+  }
+  .recipe-card:hover {
+    transform: translateY(-5px);
   }
   .recipe-card img {
     width: 100%;
@@ -106,7 +110,7 @@
     {% if recipes %}
     <form method="POST" action="{% url 'clear_my_recipes' %}">
       {% csrf_token %}
-      <button type="submit" class="clear-recipes">Clear My Recipes</button>
+      <button type="submit" class="clear-recipes" aria-label="Clear all my recipes">Clear My Recipes</button>
     </form>
     {% endif %}
   </div>
@@ -115,13 +119,13 @@
   <div class="recipe-grid">
     {% for recipe in recipes %}
     <div class="recipe-card">
-      <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}">
+      <img src="{{ recipe.image.url }}" alt="Image of {{ recipe.name }}">
       <div class="recipe-card-content">
         <h3><a href="{% url 'recipe_detail' recipe.id %}">{{ recipe.name }}</a></h3>
         <p>{{ recipe.description }}</p>
         <form method="POST" action="{% url 'remove_from_my_recipes' recipe.id %}">
           {% csrf_token %}
-          <button type="submit" class="remove-recipe">×</button>
+          <button type="submit" class="remove-recipe" aria-label="Remove {{ recipe.name }}">×</button>
         </form>
       </div>
     </div>
@@ -132,7 +136,7 @@
     <h3>You haven't added any recipes yet!</h3>
     <p>Start building your personal cookbook by adding recipes from the home page.</p>
     <p>Just click the "+" button on any recipe you'd like to save for later.</p>
-    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Explore Recipes</a>
+    <a href="{% url 'inspire' %}" class="btn btn-primary mt-3">Explore Recipes</a>
   </div>
   {% endif %}
 </div>

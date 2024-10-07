@@ -4,10 +4,10 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    # Home page
     path('', views.home, name='home'),
     
     # Recipe-related URLs
+    path('inspire/', views.inspire, name='inspire'),
     path('recipe/<int:pk>/', views.recipe_detail, name='recipe_detail'),
     path('add_to_my_recipes/<int:recipe_id>/', views.add_to_my_recipes, name='add_to_my_recipes'),
     path('create/', views.create_recipe, name='create_recipe'),
@@ -16,10 +16,12 @@ urlpatterns = [
     path('clear_my_recipes/', views.clear_my_recipes, name='clear_my_recipes'),
 
     # Authentication-related URLs
-    path('accounts/', include('allauth.urls')),  # Use Django Allauth's URLs
-
+    path('accounts/', include('allauth.urls')),  # Make sure this is included
+    
     # Profile URL
     path('profile/', views.profile, name='profile'),
+    path('profile/update/', views.update_profile, name='update_profile'),
+
 
     # Calendar-related URLs
     path('calendar/', views.calendar_view, name='calendar'),
