@@ -137,7 +137,7 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Django Allauth settings
 ACCOUNT_TEMPLATE_EXTENSION = 'html'
-ACCOUNT_LOGIN_TEMPLATE = 'account/login.html'  # Custom login template path
+ACCOUNT_LOGIN_TEMPLATE = 'accounts/login.html'  # Custom login template path
 ACCOUNT_LOGOUT_TEMPLATE = 'account/logout.html'  # Custom logout template path
 ACCOUNT_ADAPTER = 'recipes.adapters.MyAccountAdapter'  # Custom adapter if needed
 

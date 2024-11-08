@@ -2,6 +2,8 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
+from django.views.generic import TemplateView  # Or your custom login view
+
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -16,6 +18,7 @@ urlpatterns = [
     path('clear_my_recipes/', views.clear_my_recipes, name='clear_my_recipes'),
 
     # Authentication-related URLs
+    path('custom-login/', TemplateView.as_view(template_name='account/login.html'), name='custom-login'),
     path('accounts/', include('allauth.urls')),  # Make sure this is included
     
     # Profile URL
