@@ -110,38 +110,41 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Django Allauth settings
+
+
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',  # Required for Django's own auth
+    'allauth.account.auth_backends.AuthenticationBackend',  # For Django Allauth
 )
 
+# Django Sites framework
 SITE_ID = 1
 
-# Custom Django Allauth settings for Google social authentication
+# Google social authentication provider settings
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        'CLIENT_ID': config('GOOGLE_CLIENT_ID'),
-        'SECRET': config('GOOGLE_CLIENT_SECRET'),
+        'CLIENT_ID': config('GOOGLE_CLIENT_ID'),  # Replace with your Google client ID
+        'SECRET': config('GOOGLE_CLIENT_SECRET'),  # Replace with your Google client secret
         'SCOPE': ['profile', 'email'],
         'AUTH_PARAMS': {'access_type': 'online'},
     }
 }
 
-# URL redirection settings after login/logout
+# URL redirection settings
 LOGIN_URL = '/custom-login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Account template settings
+# Django Allauth settings
 ACCOUNT_TEMPLATE_EXTENSION = 'html'
-ACCOUNT_LOGIN_TEMPLATE = 'account/login.html'
-ACCOUNT_ADAPTER = 'recipes.adapters.MyAccountAdapter'
+ACCOUNT_LOGIN_TEMPLATE = 'account/login.html'  # Custom login template path
+ACCOUNT_LOGOUT_TEMPLATE = 'account/logout.html'  # Custom logout template path
+ACCOUNT_ADAPTER = 'recipes.adapters.MyAccountAdapter'  # Custom adapter if needed
 
 # Account settings
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'  # Allow login by username or email
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Optional or 'mandatory' if required
 
-# Social account login settings
+# Social account settings
 SOCIALACCOUNT_LOGIN_ON_GET = True
-
