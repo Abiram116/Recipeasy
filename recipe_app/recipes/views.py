@@ -14,6 +14,7 @@ from django.utils import timezone
 def home(request):
     return render(request, 'home.html')
 
+
 def inspire(request):
     inspiring_recipes = Recipe.objects.filter(is_inspiring=True)
     for recipe in inspiring_recipes:
@@ -25,6 +26,7 @@ def inspire(request):
     }
     return render(request, 'inspire.html', context)
 
+
 @login_required
 def profile(request):
     user_recipes = UserRecipe.objects.filter(user=request.user)
@@ -35,6 +37,7 @@ def profile(request):
         'recipes': recipes,
     }
     return render(request, 'profile.html', context)
+
 
 @login_required
 def update_profile(request):
@@ -48,18 +51,28 @@ def update_profile(request):
         return redirect('profile')  # Redirect to profile page after update
     return render(request, 'profile.html')
 
+
 @login_required
 def create_recipe(request):
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
         if form.is_valid():
-            recipe = form.save(commit=False)
-            recipe.save()
+            recipe = form.save(commit=False)  # Save recipe without committing to DB yet
+            recipe.user = request.user  # Add the user to the recipe if needed
+            recipe.save()  # Save the recipe object first
+            
+            form.save_m2m()  # Ensure the many-to-many tags are saved
+            
+            # Associate the user with the recipe in UserRecipe
             UserRecipe.objects.create(recipe=recipe, user=request.user)
-            return redirect('home')
+            
+            return redirect('home')  # Redirect to the home page (or wherever)
     else:
         form = RecipeForm()
+
     return render(request, 'create_recipe.html', {'form': form})
+
+
 
 @login_required
 def add_to_my_recipes(request, recipe_id):
@@ -77,12 +90,14 @@ def add_to_my_recipes(request, recipe_id):
         else:
             messages.info(request, 'Recipe already in My Recipes')
         return redirect('home')
-    
+
+
 @login_required
 def my_recipes(request):
     user_recipes = UserRecipe.objects.filter(user=request.user)
     recipes = [user_recipe.recipe for user_recipe in user_recipes]
     return render(request, 'my_recipes.html', {'recipes': recipes})
+
 
 @login_required
 def remove_from_my_recipes(request, recipe_id):
@@ -92,12 +107,14 @@ def remove_from_my_recipes(request, recipe_id):
         messages.success(request, 'Recipe removed successfully.')
     return redirect('my_recipes')
 
+
 @login_required
 def clear_my_recipes(request):
     if request.method == 'POST':
         UserRecipe.objects.filter(user=request.user).delete()
         messages.success(request, 'All recipes cleared successfully.')
     return redirect('my_recipes')
+
 
 def recipe_detail(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
@@ -120,6 +137,7 @@ def calendar_view(request):
     }
     return render(request, 'calendar.html', context)
 
+
 @login_required
 def get_recipe_schedule(request):
     scheduled_recipes = RecipeSchedule.objects.filter(user=request.user).select_related('recipe')
@@ -134,6 +152,7 @@ def get_recipe_schedule(request):
     } for schedule in scheduled_recipes]
 
     return JsonResponse(events, safe=False)
+
 
 @login_required
 @csrf_exempt
@@ -169,6 +188,7 @@ def save_recipe_schedule(request):
         'id': str(schedule.id),
         'startTime': schedule.datetime.date().isoformat(),
     })
+
 
 @login_required
 @csrf_exempt

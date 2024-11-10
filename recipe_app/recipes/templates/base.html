@@ -33,7 +33,6 @@
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container">
                 <a class="navbar-brand" href="{% url 'inspire' %}">
-                    <!-- Lazy load the logo image -->
                     <img src="{% static 'images/Recipeasy favicon color.png' %}" alt="Recipeasy Logo" height="40" class="d-inline-block align-top" loading="lazy">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,10 +40,20 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'inspire' %}">Inspire</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'my_recipes' %}">My Recipes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'calendar' %}">Calendar</a></li>
+                        <li class="nav-item {% if request.path == '/' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'home' %}">Home</a>
+                        </li>
+                        <li class="nav-item {% if request.path == '/inspire/' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'inspire' %}">Inspire</a>
+                        </li>
+                        {% if user.is_authenticated %}
+                        <li class="nav-item {% if request.path == '/my_recipes/' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'my_recipes' %}">My Recipes</a>
+                        </li>
+                        <li class="nav-item {% if request.path == '/calendar/' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'calendar' %}">Calendar</a>
+                        </li>
+                        {% endif %}
                     </ul>
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
@@ -64,6 +73,7 @@
             </div>
         </nav>
     </header>
+    
 
     <main class="container mt-4 main-content">
         {% block content %}
