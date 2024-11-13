@@ -109,7 +109,8 @@
                             </div>
                         {% elif field.name == 'rating' %}
                             <div class="mb-4">
-                                {% render_field field class="form-control" type="hidden" %}
+                                <!-- Hidden input field for submitting the rating value to the server -->
+                                <input type="hidden" name="rating" id="rating-input" value="3" />
                                 <input type="range" min="1" max="5" value="3" step="0.5" class="form-range" id="rating-slider" />
                                 <span id="slider-value">3</span> / 5
                             </div>
@@ -153,12 +154,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Rating slider
     const slider = document.getElementById('rating-slider');
-    const ratingInput = document.querySelector('input[name="rating"]');
+    const ratingInput = document.getElementById('rating-input'); // Hidden input field
     const sliderValue = document.getElementById('slider-value');
 
     slider.addEventListener('input', function() {
         sliderValue.textContent = parseFloat(this.value).toFixed(1);
-        ratingInput.value = this.value;
+        ratingInput.value = this.value; // Update hidden input with slider value
     });
 
     // Textarea counter
@@ -178,5 +179,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fileLabel.textContent = fileName;
     });
 });
+
 </script>
 {% endblock %}
