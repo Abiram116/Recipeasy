@@ -1,12 +1,18 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from .models import Recipe, RecipeSchedule
+from .models import Recipe, RecipeSchedule, Tag
 
 class RecipeForm(forms.ModelForm):
+    tags = forms.ModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Tags"
+    )
     class Meta:
         model = Recipe
-        fields = ['name', 'description', 'image', 'rating', 'is_inspiring', 'ingredients']
+        fields = ['name', 'description', 'image', 'rating', 'is_inspiring', 'ingredients', 'tags']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter recipe name'}),
             'description': forms.Textarea(attrs={'class': 'form-control recipe-textarea', 'rows': 5, 'placeholder': 'Describe your recipe'}),

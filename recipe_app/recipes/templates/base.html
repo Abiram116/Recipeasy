@@ -40,9 +40,16 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'inspire' %}">Inspire</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'my_recipes' %}">My Recipes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'calendar' %}">Calendar</a></li>
-                        {% comment %} <li class="nav-item"><a class="nav-link" href="#">GL</a></li> <!-- Make sure to update the GL link --> {% endcomment %}
+
+
+                        {% if user.is_authenticated %}
+                        <li class="nav-item {% if request.path == '/my_recipes/' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'my_recipes' %}">My Recipes</a>
+                        </li>
+                        <li class="nav-item {% if request.path == '/calendar/' %}active{% endif %}">
+                            <a class="nav-link" href="{% url 'calendar' %}">Calendar</a>
+                        </li>
+                        {% endif %}
                     </ul>
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}

@@ -52,6 +52,32 @@
         border-radius: 50%;
         cursor: pointer;
     }
+
+    /* Tags styling */
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .tag-label {
+        padding: 0.4rem 0.8rem;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+    }
+    .tag-label:hover {
+        background-color: #007bff;
+        color: #fff;
+    }
+    .tag-input {
+        display: none; /* Hides the checkbox */
+    }
+    .tag-input:checked + .tag-label {
+        background-color: #007bff;
+        color: #fff;
+        border-color: #007bff;
+    }
 </style>
 
 <div class="container mt-5 mb-5 recipe-form-container">
@@ -65,6 +91,7 @@
                 {% for field in form %}
                     <div class="mb-4">
                         <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        
                         {% if field.name == 'image' %}
                             <div class="custom-file">
                                 {% render_field field class="custom-file-input" id="customFile" %}
@@ -91,9 +118,17 @@
                             <div class="textarea-counter">
                                 <span class="current">0</span> / <span class="maximum">1000</span>
                             </div>
+                        {% elif field.name == 'tags' %}
+                            <div class="tags-container">
+                                {% for tag in field %}
+                                    <input type="checkbox" class="tag-input" id="{{ tag.id_for_label }}" name="{{ tag.name }}" value="{{ tag.choice_value }}">
+                                    <label class="tag-label" for="{{ tag.id_for_label }}">{{ tag.choice_label }}</label>
+                                {% endfor %}
+                            </div>
                         {% else %}
                             {% render_field field class="form-control" %}
                         {% endif %}
+
                         {% if field.help_text %}
                             <small class="form-text text-muted">{{ field.help_text }}</small>
                         {% endif %}

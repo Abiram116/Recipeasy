@@ -4,6 +4,11 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
@@ -22,6 +27,7 @@ class Recipe(models.Model):
     )
     is_inspiring = models.BooleanField(default=True)
     ingredients = models.TextField()
+    tags = models.ManyToManyField(Tag, related_name="recipes", blank=True)
 
     def get_absolute_url(self):
         return reverse('recipe_detail', args=[str(self.id)])
