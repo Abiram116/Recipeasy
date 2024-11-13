@@ -52,67 +52,31 @@
         border-radius: 50%;
         cursor: pointer;
     }
-    /* New styles for tags */
+
+    /* Tags styling */
     .tags-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        margin-bottom: 15px;
+        gap: 0.5rem;
     }
-    .tag-item {
-        padding: 5px 15px;
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
+    .tag-label {
+        padding: 0.4rem 0.8rem;
+        border: 1px solid #ccc;
         border-radius: 20px;
         cursor: pointer;
-        transition: all 0.2s;
-        font-size: 0.9rem;
+        transition: background-color 0.3s, color 0.3s;
     }
-    .tag-item:hover {
-        background-color: #e9ecef;
-    }
-    .tag-item.active {
+    .tag-label:hover {
         background-color: #007bff;
-        color: white;
+        color: #fff;
+    }
+    .tag-input {
+        display: none; /* Hides the checkbox */
+    }
+    .tag-input:checked + .tag-label {
+        background-color: #007bff;
+        color: #fff;
         border-color: #007bff;
-    }
-    .tags-dropdown {
-        position: relative;
-        display: inline-block;
-    }
-    .more-tags-btn {
-        padding: 5px 15px;
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .more-tags-btn:hover {
-        background-color: #e9ecef;
-    }
-    .tags-dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: white;
-        min-width: 160px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        border-radius: 4px;
-        z-index: 1000;
-        max-height: 300px;
-        overflow-y: auto;
-    }
-    .tags-dropdown-content.show {
-        display: block;
-    }
-    .dropdown-tag-item {
-        padding: 8px 16px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    .dropdown-tag-item:hover {
-        background-color: #f8f9fa;
     }
 </style>
 
@@ -127,29 +91,8 @@
                 {% for field in form %}
                     <div class="mb-4">
                         <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                        {% if field.name == 'tags' %}
-                            <div class="tags-container">
-                                <input type="hidden" name="selected_tags" id="selected_tags">
-                                {% with visible_tags=form.tags.field.queryset|slice:":5" %}
-                                    {% for tag in visible_tags %}
-                                        <div class="tag-item" data-tag-id="{{ tag.id }}">{{ tag.name }}</div>
-                                    {% endfor %}
-                                {% endwith %}
-                                
-                                <div class="tags-dropdown">
-                                    <button type="button" class="more-tags-btn" id="moreTagsBtn">
-                                        More <i class="fas fa-chevron-down"></i>
-                                    </button>
-                                    <div class="tags-dropdown-content" id="tagsDropdown">
-                                        {% with hidden_tags=form.tags.field.queryset|slice:"5:" %}
-                                            {% for tag in hidden_tags %}
-                                                <div class="dropdown-tag-item" data-tag-id="{{ tag.id }}">{{ tag.name }}</div>
-                                            {% endfor %}
-                                        {% endwith %}
-                                    </div>
-                                </div>
-                            </div>
-                        {% elif field.name == 'image' %}
+                        
+                        {% if field.name == 'image' %}
                             <div class="custom-file">
                                 {% render_field field class="custom-file-input" id="customFile" %}
                                 <label class="custom-file-label" for="customFile">Choose file</label>
@@ -175,9 +118,17 @@
                             <div class="textarea-counter">
                                 <span class="current">0</span> / <span class="maximum">1000</span>
                             </div>
+                        {% elif field.name == 'tags' %}
+                            <div class="tags-container">
+                                {% for tag in field %}
+                                    <input type="checkbox" class="tag-input" id="{{ tag.id_for_label }}" name="{{ tag.name }}" value="{{ tag.choice_value }}">
+                                    <label class="tag-label" for="{{ tag.id_for_label }}">{{ tag.choice_label }}</label>
+                                {% endfor %}
+                            </div>
                         {% else %}
                             {% render_field field class="form-control" %}
                         {% endif %}
+
                         {% if field.help_text %}
                             <small class="form-text text-muted">{{ field.help_text }}</small>
                         {% endif %}
@@ -199,79 +150,33 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Rating slider logic
-        const slider = document.getElementById('rating-slider');
-        const ratingInput = document.querySelector('input[name="rating"]');
-        const sliderValue = document.getElementById('slider-value');
+document.addEventListener('DOMContentLoaded', function() {
+    // Rating slider
+    const slider = document.getElementById('rating-slider');
+    const ratingInput = document.querySelector('input[name="rating"]');
+    const sliderValue = document.getElementById('slider-value');
 
-        slider.addEventListener('input', function() {
-            sliderValue.textContent = parseFloat(this.value).toFixed(1);
-            ratingInput.value = this.value;
-        });
+    slider.addEventListener('input', function() {
+        sliderValue.textContent = parseFloat(this.value).toFixed(1);
+        ratingInput.value = this.value;
+    });
 
-        // Textarea character counter logic
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(textarea => {
-            const counter = textarea.nextElementSibling.querySelector('.current');
-            textarea.addEventListener('input', function() {
-                counter.textContent = this.value.length;
-            });
-        });
-
-        // File input label update
-        const fileInput = document.querySelector('.custom-file-input');
-        const fileLabel = document.querySelector('.custom-file-label');
-        fileInput.addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || 'Choose file';
-            fileLabel.textContent = fileName;
-        });
-
-        // Tag selection logic
-        const selectedTags = new Set();
-        const selectedTagsInput = document.getElementById('selected_tags');
-
-        // Handle the toggle of the "more tags" dropdown
-        const moreTagsBtn = document.getElementById('moreTagsBtn');
-        const tagsDropdown = document.getElementById('tagsDropdown');
-
-        moreTagsBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            tagsDropdown.classList.toggle('show');
-        });
-
-        // Handle tag selection (button click)
-        document.querySelectorAll('.tag-item, .dropdown-tag-item').forEach(tag => {
-            tag.addEventListener('click', function() {
-                const tagId = this.dataset.tagId;
-                if (selectedTags.has(tagId)) {
-                    selectedTags.delete(tagId); // Deselect tag
-                    this.classList.remove('active');
-                } else {
-                    selectedTags.add(tagId); // Select tag
-                    this.classList.add('active');
-                }
-
-                // Update the value of the hidden input with selected tag IDs
-                selectedTagsInput.value = Array.from(selectedTags).join(',');
-            });
-        });
-
-        // Close the dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!tagsDropdown.contains(e.target) && !moreTagsBtn.contains(e.target)) {
-                tagsDropdown.classList.remove('show');
-            }
-        });
-
-        // Ensure that the selected tags are added when submitting the form
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function() {
-            // Set the value of selected_tags input to be the comma-separated tag IDs
-            selectedTagsInput.value = Array.from(selectedTags).join(',');
+    // Textarea counter
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        const counter = textarea.nextElementSibling.querySelector('.current');
+        textarea.addEventListener('input', function() {
+            counter.textContent = this.value.length;
         });
     });
-</script>
-    
 
+    // Custom file input
+    const fileInput = document.querySelector('.custom-file-input');
+    const fileLabel = document.querySelector('.custom-file-label');
+    fileInput.addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || 'Choose file';
+        fileLabel.textContent = fileName;
+    });
+});
+</script>
 {% endblock %}
