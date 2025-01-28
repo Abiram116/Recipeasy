@@ -14,7 +14,7 @@ Recipeasy is a Django-based web application that helps users manage recipes, sho
 
 ### 1. Clone the repository
 ```bash
-git clone (https://github.com/Abiram116/Recipeasy.git)
+git clone https://github.com/Abiram116/Recipeasy.git
 ```
 ### 2. Set up the virtual environment
 - On Windows:
