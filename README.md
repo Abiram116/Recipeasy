@@ -17,42 +17,42 @@ Recipeasy is a Django-based web application that helps users manage recipes, sho
 git clone <[repository-url](https://github.com/Abiram116/Recipeasy.git)>
 ```
 ### 2. Set up the virtual environment
-- On Windows:
+     - On Windows:
      ```bash
      .\venv\Scripts\activate
      ```
-   - On macOS/Linux:
+     - On macOS/Linux:
      ```bash
      source venv/bin/activate
      ```
 ### 3. Install dependencies
-```bash
-pip install -r requirements.txt
-```
+     ```bash
+     pip install -r requirements.txt
+     ```
 ### 4. Apply migrations
-```bash
-python manage.py migrate
-```
+     ```bash
+     python manage.py migrate
+     ```
 ### 5. Run the development server
-```bash
-python manage.py runserver
-```
+     ```bash
+     python manage.py runserver
+     ```
 
 ## Usage
-- Home Page: Displays the introduction to the app, recipes, and GSAP animations.
-- Recipe Pages: Users can explore recipes, view ingredients, and add recipes to their list.
-- Calendar: Schedule recipes by adding them to the calendar.
-- Social Login: Use Google authentication to log in and manage your recipes.
+     - Home Page: Displays the introduction to the app, recipes, and GSAP animations.
+     - Recipe Pages: Users can explore recipes, view ingredients, and add recipes to their list.
+     - Calendar: Schedule recipes by adding them to the calendar.
+     - Social Login: Use Google authentication to log in and manage your recipes.
 
 ## Technologies Used
-- Backend: Django (SQLite)
-- Frontend: HTML, CSS, JavaScript (GSAP animations)
-- Authentication: Google OAuth 2.0
-- Deployment: Render
+     - Backend: Django (SQLite)
+     - Frontend: HTML, CSS, JavaScript (GSAP animations)
+     - Authentication: Google OAuth 2.0
+     - Deployment: Render
 
 ## Credits
-- GSAP: For animations on the home page.
-- Google OAuth: For social authentication.
+     - GSAP: For animations on the home page.
+     - Google OAuth: For social authentication.
 
 ## License
-**This project is open-source and available under the MIT License.**
+     **This project is open-source and available under the MIT License.**
